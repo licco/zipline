@@ -86,9 +86,9 @@ class Blotter(object):
         amount > 0 :: Buy/Cover
         amount < 0 :: Sell/Short
         Market order:    order(sid, amount)
-        Limit order:     order(sid, amount, LimitOrder(price))
-        Stop order:      order(sid, amount, StopOrder(price))
-        StopLimit order: order(sid, amount, StopLimitOrder(price))
+        Limit order:     order(sid, amount, style=LimitOrder(limit_price))
+        Stop order:      order(sid, amount, style=StopOrder(stop_price))
+        StopLimit order: order(sid, amount, style=StopLimitOrder(limit_price, stop_price))
         """
         if amount == 0:
             # Don't bother placing orders for 0 shares.
@@ -115,7 +115,7 @@ class Blotter(object):
 
         return order.id
 
-    def cancel(self, order_id, rejected=False):
+    def cancel(self, order_id, rejected=False, reason=False):
         if order_id not in self.orders:
             return
 
@@ -127,8 +127,10 @@ class Blotter(object):
 
             if cur_order in self.new_orders:
                 self.new_orders.remove(cur_order)
-            cur_order.cancel(rejected=rejected)
+            cur_order.cancel(rejected)
             cur_order.dt = self.current_dt
+            if reason:
+                cur_order.reason = reason
             # we want this order's new status to be relayed out
             # along with newly placed orders.
             self.new_orders.append(cur_order)
