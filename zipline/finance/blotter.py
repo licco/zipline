@@ -135,6 +135,21 @@ class Blotter(object):
             # along with newly placed orders.
             self.new_orders.append(cur_order)
 
+    def hold(self, order_id, reason):
+        if order_id not in self.orders:
+            return
+
+        cur_order = self.orders[order_id]
+        if cur_order.open:
+            if cur_order in self.new_orders:
+                self.new_orders.remove(cur_order)
+            cur_order.hold()
+            cur_order.dt = self.current_dt
+            cur_order.reason = reason
+            # we want this order's new status to be relayed out
+            # along with newly placed orders.
+            self.new_orders.append(cur_order)
+
     def process_split(self, split_event):
         if split_event.sid not in self.open_orders:
             return
@@ -294,6 +309,9 @@ class Order(object):
             self.status = ORDER_STATUS.REJECTED
         else:
             self.status = ORDER_STATUS.CANCELLED
+
+    def hold(self):
+        self.status = ORDER_STATUS.HELD
 
     @property
     def open(self):
