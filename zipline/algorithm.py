@@ -157,9 +157,8 @@ class TradingAlgorithm(object):
             self.sim_params = create_simulation_parameters(
                 capital_base=self.capital_base
             )
-
-        # perf_tacker gets instantiated in ._create_generator()
-        self.perf_tracker = None
+        else:
+            self.perf_tracker = PerformanceTracker(self.sim_params)
 
         self.blotter = kwargs.pop('blotter', None)
         if not self.blotter:
